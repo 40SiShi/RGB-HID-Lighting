@@ -1,11 +1,9 @@
-# Arduino HID Lighting
+# SoundVoltex-Lighting-v2 
 
-Forked from https://github.com/mon/Arduino-HID-Lighting
+Forked from https://github.com/mon/Arduino-HID-Lighting, thanks!
 
-Some games (eg Konami arcade rips) support external lights, controlled by the game.
-These communicate over generic HID output reports.
+Second version of my SoundVoltex LED lighting. This version will feature multiple locations and easy setup.
 
-This is a small project that configures USB capable Arduino boards correctly,
-such that you only need to handle LED events.
-
-If there are any compatibility problems, pull requests and new issues are most welcome.
+Proposed usages:  
+* 7 standard keys (A, B, C, D, FX-L, FX-R, Start)
+* 5 RGB lights (4 wings, 1 woofer)

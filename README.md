@@ -1,5 +1,7 @@
 # Arduino HID Lighting
 
+Forked from https://github.com/mon/Arduino-HID-Lighting
+
 Some games (eg Konami arcade rips) support external lights, controlled by the game.
 These communicate over generic HID output reports.
 

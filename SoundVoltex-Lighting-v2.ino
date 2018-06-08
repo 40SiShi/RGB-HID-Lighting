@@ -16,21 +16,8 @@ typedef struct {
 
 // The single LEDs will be first in BTools
 // The RGB LEDs will come afterwards, with R/G/B individually
-#define NUMBER_OF_SINGLE 0
-#define NUMBER_OF_RGB 1
-
-/* Important note!
- *  NEOPIXELS:
- *  You cannot use strip.show() inside light_update, since it is inside
- *  an interrupt handler. Instead, make a variable eg:
- *   volatile bool needs_update = false;
- *  When you want to show your lights, set it to true. (eg inside light_update)
- *  Then, inside loop():
- *   if(needs_update) {
- *     strip.show();
- *     needs_update = false;
- *   }
- */
+#define NUMBER_OF_SINGLE 8
+#define NUMBER_OF_RGB 5
 
 void light_update(SingleLED* single_leds, RGBLed* rgb_leds) {
   for(int i = 0; i < NUMBER_OF_SINGLE; i++) {

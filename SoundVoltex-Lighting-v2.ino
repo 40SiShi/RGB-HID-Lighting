@@ -1,5 +1,19 @@
 #include "PluggableUSB.h"
 #include "HID.h"
+#include <Adafruit_NeoPixel.h>
+#ifdef __AVR__
+  #include <avr/power.h>
+#endif
+
+#define PIN 7
+#define SWITCH 0
+
+#define NUMBER_OF_SINGLE 8
+#define NUMBER_OF_RGB 5
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(120, PIN, NEO_GRB + NEO_KHZ800);
+
+int brightnessFactor = 20; // 5 - 35, bright - dim (35 = off)
 
 typedef struct {
   uint8_t brightness;
@@ -11,13 +25,9 @@ typedef struct {
   uint8_t b;
 } RGBLed;
 
-// ******************************
-// EDIT THESE LINES
+uint8_t dataSingle[NUMBER_OF_SINGLE];
+uint8_t dataRGB[NUMBER_OF_RGB];
 
-// The single LEDs will be first in BTools
-// The RGB LEDs will come afterwards, with R/G/B individually
-#define NUMBER_OF_SINGLE 8
-#define NUMBER_OF_RGB 5
 
 void light_update(SingleLED* single_leds, RGBLed* rgb_leds) {
   for(int i = 0; i < NUMBER_OF_SINGLE; i++) {
@@ -30,8 +40,63 @@ void light_update(SingleLED* single_leds, RGBLed* rgb_leds) {
   }
 }
 
+void setColor(uint32_t c, uint16_t from, uint16_t to){
+  for(uint16_t i = from; i < to; i ++){
+    strip.setPixelColor(i, c);
+  }
+  strip.show();
+}
+
+void off(){
+  for(uint16_t i=0; i<strip.numPixels(); i++) {
+    strip.setPixelColor(i, 0);
+  }
+  strip.show();
+}
+
+void colorWipe(uint32_t c, uint8_t wait) {
+  for(uint16_t i=0; i<strip.numPixels(); i++) {
+    strip.setPixelColor(i, c);
+    strip.show();
+    delay(wait);
+  }
+}
+
+void clearPixel(){
+  for(uint16_t i=0; i<strip.numPixels(); i++) {
+    strip.setPixelColor(i, 0);
+  }
+}
+
+void setPixel(uint32_t c, uint16_t at){
+  strip.setPixelColor(at, c);
+}
+
+void showPixel(){
+  strip.show();
+}
+
+void showBrightnessLevel(){
+    clearPixel();
+    setPixel(strip.Color(90, 0, 0), 116);
+    setPixel(strip.Color(0, 90, 5), 84);
+    setPixel(strip.Color(50, 50, 00), 100);
+    setPixel(strip.Color(50, 50, 50), brightnessFactor + 80);
+    showPixel();
+}
+
 void setup() {
-  // setup your LEDs here
+  delay(400);
+  
+  // Switch
+  pinMode(SWITCH,INPUT_PULLUP);
+  
+  // LED
+  //pinMode(LED_BUILTIN, OUTPUT);
+  strip.begin();
+  colorWipe(strip.Color(27, 2, 1), 0);
+  colorWipe(strip.Color(0, 0, 0), 0);
+  strip.show(); // Initialize all pixels to 'off'
 }
 
 void loop() {

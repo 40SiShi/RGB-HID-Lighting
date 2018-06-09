@@ -19,22 +19,22 @@ uint8_t brightnessAnchor = 100;
 int brightnessFactor = 20; // 5 - 35, bright - dim (35 = off)
 // Single LEDs {dataID (0-7), LEDfloor(0-119), LEDceil(0-119), type(0:BT, 1:FX, 2:START)}
 uint8_t configSingle[8][4] = {
-  {0, 2, 0, 199},
+  {0, 2, 0, 119},
   {1, 0, 2, 5},
   {2, 0, 7, 10},
   {3, 0, 12, 15},
   {4, 0, 17, 20},
   {5, 1, 3, 9},
   {6, 1, 13, 19},
-  {7, 3, 0, 199}
+  {7, 3, 0, 119}
 };
 // RGB LEDs {dataID (0-4), LEDfloor(0-119), LEDceil(0-119)}
-uint8_t configLed[5][3] = {
-  {0, 0, 199},
-  {0, 0, 199},
-  {0, 0, 199},
-  {0, 0, 199},
-  {0, 0, 199}
+uint8_t configRGB[5][3] = {
+  {0, 0, 22},
+  {1, 22, 42},
+  {2, 43, 69},
+  {3, 69, 98},
+  {4, 99, 119}
 };
 // Colors
 uint32_t colorBT = strip.Color(16, 16, 24);
@@ -131,6 +131,14 @@ void setup() {
 void loop() {
   if (needUpdate){
     // Process rgb
+    for (uint8_t* c : configRGB){
+      uint8_t id = c[0];
+      uint8_t from = c[1];
+      uint8_t to = c[2];
+
+      setColor(dataRGB[id], from, to);
+      
+    }
     
     // Process single
     for (uint8_t* c : configSingle){

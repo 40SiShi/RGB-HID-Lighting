@@ -11,20 +11,22 @@
 #define NUMBER_OF_SINGLE 8
 #define NUMBER_OF_RGB 5
 
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(120, PIN, NEO_GRB + NEO_KHZ800);
+
 // Config
 // General
 uint8_t brightnessAnchor = 100;
 int brightnessFactor = 20; // 5 - 35, bright - dim (35 = off)
 // Single LEDs {dataID (0-7), LEDfloor(0-119), LEDceil(0-119), type(0:BT, 1:FX, 2:START)}
 uint8_t configSingle[8][4] = {
-  {0, 0, 199, 2},
-  {0, 0, 199, 2},
-  {0, 0, 199, 2},
-  {0, 0, 199, 2},
-  {0, 0, 199, 2},
-  {0, 0, 199, 2},
-  {0, 0, 199, 2},
-  {0, 0, 199, 2}
+  {0, 2, 0, 199},
+  {1, 0, 2, 5},
+  {2, 0, 7, 10},
+  {3, 0, 12, 15},
+  {4, 0, 17, 20},
+  {5, 1, 3, 9},
+  {6, 1, 13, 19},
+  {7, 3, 0, 199}
 };
 // RGB LEDs {dataID (0-4), LEDfloor(0-119), LEDceil(0-119)}
 uint8_t configLed[5][3] = {
@@ -34,9 +36,14 @@ uint8_t configLed[5][3] = {
   {0, 0, 199},
   {0, 0, 199}
 };
+// Colors
+uint32_t colorBT = strip.Color(16, 16, 24);
+uint32_t colorFX = strip.Color(24, 12, 16);
+uint32_t colorStart = strip.Color(22, 22, 22);
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(120, PIN, NEO_GRB + NEO_KHZ800);
-
+// Notes
+// Lights: Bottom (0-22), Left (23-59), Top (60-82), Right (83-119)
+bool needUpdate = false;
 
 typedef struct {
   uint8_t brightness;
@@ -54,20 +61,18 @@ uint8_t dataRGB[NUMBER_OF_RGB];
 
 void light_update(SingleLED* single_leds, RGBLed* rgb_leds) {
   for(int i = 0; i < NUMBER_OF_SINGLE; i++) {
-    // YOUR CODE HERE
-    // led_stuff(single_leds[i].brightness);
+    dataSingle[i] = single_leds[i].brightness;
   }
   for(int i = 0; i < NUMBER_OF_RGB; i++) {
-    // YOUR CODE HERE
-    // rgb_stuff(rgb_leds[i].r, rgb_leds[i].g, rgb_leds[i].b);
+    dataRGB[i] = strip.Color(rgb_leds[i].r, rgb_leds[i].g, rgb_leds[i].b);
   }
+  needUpdate = true;
 }
 
-void setColor(uint32_t c, uint16_t from, uint16_t to){
-  for(uint16_t i = from; i < to; i ++){
+void setColor(uint32_t c, uint8_t from, uint8_t to){
+  for(uint8_t i = from; i < to; i ++){
     strip.setPixelColor(i, c);
   }
-  strip.show();
 }
 
 void off(){
@@ -91,7 +96,7 @@ void clearPixel(){
   }
 }
 
-void setPixel(uint32_t c, uint16_t at){
+void setPixel(uint32_t c, uint8_t at){
   strip.setPixelColor(at, c);
 }
 
@@ -109,6 +114,7 @@ void showBrightnessLevel(){
 }
 
 void setup() {
+  // Start
   delay(400);
   
   // Switch
@@ -117,13 +123,46 @@ void setup() {
   // LED
   //pinMode(LED_BUILTIN, OUTPUT);
   strip.begin();
-  colorWipe(strip.Color(27, 2, 1), 0);
+  colorWipe(strip.Color(2, 20, 20), 0);
   colorWipe(strip.Color(0, 0, 0), 0);
   strip.show(); // Initialize all pixels to 'off'
 }
 
 void loop() {
-  // USB module does the hard work
+  if (needUpdate){
+    // Process rgb
+    
+    // Process single
+    for (uint8_t* c : configSingle){
+      uint8_t id = c[0];
+      uint8_t type = c[1];
+      uint8_t from = c[2];
+      uint8_t to = c[3];
+      switch (type){
+        case 0: // BT
+          if (dataSingle[id]){
+            setColor(colorBT, from, to);
+          }
+        break;
+        case 1: // FX
+          if (dataSingle[id]){
+            setColor(colorFX, from, to);
+          }
+        break;
+        case 2: // START
+          if (dataSingle[id]){
+            setColor(colorStart, from, to);
+          }
+        break;
+      }
+    }
+    
+    // Show
+    showPixel();
+    
+    // Reset
+    needUpdate = false;
+  }
 }
 
 // ******************************

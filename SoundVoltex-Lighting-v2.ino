@@ -11,9 +11,32 @@
 #define NUMBER_OF_SINGLE 8
 #define NUMBER_OF_RGB 5
 
+// Config
+// General
+uint8_t brightnessAnchor = 100;
+int brightnessFactor = 20; // 5 - 35, bright - dim (35 = off)
+// Single LEDs {dataID (0-7), LEDfloor(0-119), LEDceil(0-119), type(0:BT, 1:FX, 2:START)}
+uint8_t configSingle[8][4] = {
+  {0, 0, 199, 2},
+  {0, 0, 199, 2},
+  {0, 0, 199, 2},
+  {0, 0, 199, 2},
+  {0, 0, 199, 2},
+  {0, 0, 199, 2},
+  {0, 0, 199, 2},
+  {0, 0, 199, 2}
+};
+// RGB LEDs {dataID (0-4), LEDfloor(0-119), LEDceil(0-119)}
+uint8_t configLed[5][3] = {
+  {0, 0, 199},
+  {0, 0, 199},
+  {0, 0, 199},
+  {0, 0, 199},
+  {0, 0, 199}
+};
+
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(120, PIN, NEO_GRB + NEO_KHZ800);
 
-int brightnessFactor = 20; // 5 - 35, bright - dim (35 = off)
 
 typedef struct {
   uint8_t brightness;

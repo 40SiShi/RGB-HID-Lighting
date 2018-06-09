@@ -56,7 +56,7 @@ typedef struct {
 } RGBLed;
 
 uint8_t dataSingle[NUMBER_OF_SINGLE];
-uint8_t dataRGB[NUMBER_OF_RGB];
+uint32_t dataRGB[NUMBER_OF_RGB];
 
 
 void light_update(SingleLED* single_leds, RGBLed* rgb_leds) {

@@ -5,49 +5,31 @@
   #include <avr/power.h>
 #endif
 
-#define PIN 7
-#define SWITCH 0
+//WS2812B Data pin
+#define PIN A3
 
-#define NUMBER_OF_SINGLE 8
-#define NUMBER_OF_RGB 5
+//Number of LED
+#define LED 20
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(120, PIN, NEO_GRB + NEO_KHZ800);
+//Total RGB block
+#define NUMBER_OF_RGB 1
 
-// Config
-// General
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(LED, PIN, NEO_GRB + NEO_KHZ800);
+
 uint8_t brightnessAnchor = 100;
-int brightnessFactor = 20; // 5 - 35, bright - dim (35 = off)
-// Single LEDs {dataID (0-7), LEDfloor(0-119), LEDceil(0-119), type(0:BT, 1:FX, 2:START)}
-uint8_t configSingle[8][4] = {
-  {0, 2, 0, 119},
-  {1, 0, 2, 5},
-  {2, 0, 7, 10},
-  {3, 0, 12, 15},
-  {4, 0, 17, 20},
-  {5, 1, 3, 9},
-  {6, 1, 13, 19},
-  {7, 3, 0, 119}
-};
-// RGB LEDs {dataID (0-4), LEDfloor(0-119), LEDceil(0-119)}
+int brightnessFactor = 20;
+
+//Config RGB {rgbblock(0-~), startled(0-~), endled(0-~)}
+//rgbblock's 0 refer the frist one, led's 0 is none
 uint8_t configRGB[5][3] = {
-  {0, 0, 22},
-  {1, 22, 42},
-  {2, 43, 69},
-  {3, 69, 98},
-  {4, 99, 119}
+  {0, 0, 20},
+  {1, 20, 21},
+  {2, 21, 22},
+  {3, 22, 23},
+  {4, 23, 24}
 };
-// Colors
-uint32_t colorBT = strip.Color(16, 16, 24);
-uint32_t colorFX = strip.Color(24, 12, 16);
-uint32_t colorStart = strip.Color(22, 22, 22);
 
-// Notes
-// Lights: Bottom (0-22), Left (23-59), Top (60-82), Right (83-119)
 bool needUpdate = false;
-
-typedef struct {
-  uint8_t brightness;
-} SingleLED;
 
 typedef struct {
   uint8_t r;
@@ -55,14 +37,10 @@ typedef struct {
   uint8_t b;
 } RGBLed;
 
-uint8_t dataSingle[NUMBER_OF_SINGLE];
 uint32_t dataRGB[NUMBER_OF_RGB];
 
 
-void light_update(SingleLED* single_leds, RGBLed* rgb_leds) {
-  for(int i = 0; i < NUMBER_OF_SINGLE; i++) {
-    dataSingle[i] = single_leds[i].brightness;
-  }
+void light_update(RGBLed* rgb_leds) {
   for(int i = 0; i < NUMBER_OF_RGB; i++) {
     dataRGB[i] = strip.Color(rgb_leds[i].r, rgb_leds[i].g, rgb_leds[i].b);
   }
@@ -117,9 +95,6 @@ void setup() {
   // Start
   delay(400);
   
-  // Switch
-  pinMode(SWITCH,INPUT_PULLUP);
-  
   // LED
   //pinMode(LED_BUILTIN, OUTPUT);
   strip.begin();
@@ -129,6 +104,7 @@ void setup() {
 }
 
 void loop() {
+  
   if (needUpdate){
     // Process rgb
     for (uint8_t* c : configRGB){
@@ -138,31 +114,6 @@ void loop() {
 
       setColor(dataRGB[id], from, to);
       
-    }
-    
-    // Process single
-    for (uint8_t* c : configSingle){
-      uint8_t id = c[0];
-      uint8_t type = c[1];
-      uint8_t from = c[2];
-      uint8_t to = c[3];
-      switch (type){
-        case 0: // BT
-          if (dataSingle[id]){
-            setColor(colorBT, from, to);
-          }
-        break;
-        case 1: // FX
-          if (dataSingle[id]){
-            setColor(colorFX, from, to);
-          }
-        break;
-        case 2: // START
-          if (dataSingle[id]){
-            setColor(colorStart, from, to);
-          }
-        break;
-      }
     }
     
     // Show
@@ -176,14 +127,10 @@ void loop() {
 // ******************************
 // don't need to edit below here
 
-#define NUMBER_OF_LIGHTS (NUMBER_OF_SINGLE + NUMBER_OF_RGB*3)
-#if NUMBER_OF_LIGHTS > 63
-  #error You must have less than 64 lights
-#endif
+#define NUMBER_OF_LIGHTS (NUMBER_OF_RGB*3) 
 
 union {
   struct {
-    SingleLED singles[NUMBER_OF_SINGLE];
     RGBLed rgb[NUMBER_OF_RGB];
   } leds;
   uint8_t raw[NUMBER_OF_LIGHTS];
@@ -263,7 +210,7 @@ class HIDLED_ : public PluggableUSBModule {
         if (request == HID_SET_REPORT) {
           if(setup.wValueH == HID_REPORT_TYPE_OUTPUT && setup.wLength == NUMBER_OF_LIGHTS){
             USB_RecvControl(led_data.raw, NUMBER_OF_LIGHTS);
-            light_update(led_data.leds.singles, led_data.leds.rgb);
+            light_update(led_data.leds.rgb);
             return true;
           }
         }
